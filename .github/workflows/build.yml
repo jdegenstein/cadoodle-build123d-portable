@@ -1,0 +1,23 @@
+name: build
+
+on: [push, pull_request, workflow_dispatch]
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [
+          "3.13",
+          ]
+        os: [macos-13, macos-14, ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: ./.github/actions/setup/
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cadoodle-build123d-portable-${{ matrix.os }}
+          path: .venv/
