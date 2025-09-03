@@ -18,7 +18,9 @@ runs:
       #TODO: re-test with input python version
       run: |
         mkdir python
+        mkdir pyinst
         export UV_PYTHON_BIN_DIR="`pwd`/python"
+        export UV_PYTHON_INSTALL_DIR="`pwd`/pyinst"
         uv python install 3.12
         uv venv --relocatable --python 3.12
         uv pip install build123d
