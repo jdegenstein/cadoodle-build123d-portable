@@ -17,6 +17,5 @@ runs:
       shell: bash
       run: |
         ls -alR
-        rm .venv
         uv venv --relocatable
         uv pip install build123d
