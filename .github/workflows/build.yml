@@ -32,4 +32,7 @@ jobs:
           name: cadoodle-build123d-portable-${{ matrix.os }}
           # TODO: make cross-platform compat
           include-hidden-files: true # This line is crucial for including hidden files
-          path: .venv/
+          path: |
+            .venv/
+            pyinst/
+            python/
