@@ -11,7 +11,7 @@ runs:
       uses: astral-sh/setup-uv@v6
       with:
         enable-cache: false
-        python-version: ${{ inputs.python-version }}
+        # python-version: ${{ inputs.python-version }}
         # activate-environment: true
     - name: Install Requirements
       shell: bash
