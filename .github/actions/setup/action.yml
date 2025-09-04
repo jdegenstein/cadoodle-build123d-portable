@@ -18,6 +18,8 @@ runs:
         echo $PATH
         export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
         echo $PATH
+        chmod +x ${GITHUB_WORKSPACE}/uv/uv
+        uv --version
         ls -alR
     # - name: Setup Python
     #   uses: astral-sh/setup-uv@v6
