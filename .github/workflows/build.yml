@@ -25,6 +25,9 @@ jobs:
           pwd
           ls -alR
           ls -alR ../
+          echo $PATH
+          export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
+          echo $PATH
           uv python find
           uv python list
       - uses: actions/upload-artifact@v4
@@ -36,3 +39,4 @@ jobs:
             .venv/
             pyinst/
             python/
+            uv/
