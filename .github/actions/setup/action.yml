@@ -10,14 +10,16 @@ env:
 runs:
   using: "composite"
   steps:
-    - name: Create uv install target directory
+    - name: Install uv into local working directory
       shell: bash
       run: |
         mkdir uv
-    - name: Setup Python
-      uses: astral-sh/setup-uv@v6
-      with:
-        enable-cache: false
+        curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="${GITHUB_WORKSPACE}/uv" sh
+        ls -alR
+    # - name: Setup Python
+    #   uses: astral-sh/setup-uv@v6
+    #   with:
+    #     enable-cache: false
         # python-version: ${{ inputs.python-version }}
         # activate-environment: true
     - name: Install Requirements
