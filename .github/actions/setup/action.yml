@@ -4,9 +4,16 @@ inputs:
     description: 'Python version'
     required: true
 
+env:
+  UV_INSTALL_DIR: ~/cadoodle-build123d-portable/cadoodle-build123d-portable/uv
+
 runs:
   using: "composite"
   steps:
+    - name: Create working directory
+      shell: bash
+      run: |
+        mkdir ~/cadoodle-build123d-portable/cadoodle-build123d-portable/uv
     - name: Setup Python
       uses: astral-sh/setup-uv@v6
       with:
