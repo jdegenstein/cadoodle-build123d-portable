@@ -15,7 +15,9 @@ runs:
       run: |
         mkdir uv
         curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="${GITHUB_WORKSPACE}/uv" sh
+        echo $PATH
         export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
+        echo $PATH
         ls -alR
     # - name: Setup Python
     #   uses: astral-sh/setup-uv@v6
