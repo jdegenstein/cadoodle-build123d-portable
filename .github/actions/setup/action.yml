@@ -35,6 +35,9 @@ runs:
         mkdir pyinst
         export UV_PYTHON_BIN_DIR="`pwd`/python"
         export UV_PYTHON_INSTALL_DIR="`pwd`/pyinst"
+        echo $PATH
+        export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
+        echo $PATH
         uv python install 3.12
         uv venv --relocatable --python 3.12
         uv pip install build123d
