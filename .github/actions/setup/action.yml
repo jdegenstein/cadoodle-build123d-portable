@@ -5,15 +5,15 @@ inputs:
     required: true
 
 env:
-  UV_INSTALL_DIR: ~/cadoodle-build123d-portable/cadoodle-build123d-portable/uv
+  UV_INSTALL_DIR: "${GITHUB_WORKSPACE}/uv"
 
 runs:
   using: "composite"
   steps:
-    - name: Create working directory
+    - name: Create uv install target directory
       shell: bash
       run: |
-        mkdir ~/cadoodle-build123d-portable/cadoodle-build123d-portable/uv
+        mkdir uv
     - name: Setup Python
       uses: astral-sh/setup-uv@v6
       with:
