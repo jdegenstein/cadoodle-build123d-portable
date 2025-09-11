@@ -20,7 +20,6 @@ runs:
         echo $PATH
         chmod +x ${GITHUB_WORKSPACE}/uv/uv
         uv --version
-        ls -alR
     # - name: Setup Python
     #   uses: astral-sh/setup-uv@v6
     #   with:
@@ -41,4 +40,4 @@ runs:
         uv python install 3.12
         uv venv --relocatable --python 3.12
         uv pip install build123d ocp_vscode
-        uv pip install git+https://github.com/jdegenstein/nice123d@v0.0.1
+        uv pip install git+https://github.com/jdegenstein/nice123d@v0.0.2
