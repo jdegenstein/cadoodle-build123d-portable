@@ -14,7 +14,7 @@ with open("$PYVENV_REL_PATH", 'r') as file:
 newdata = []
 for line in filedata:
     if "home" in line:
-        newdata.append("home = $PARENT_PATH/$PYTHON_REL_PATH\n")
+        newdata.append("home = $FULL_PYTHON_PATH\n")
     else:
         newdata.append(line)
 
