@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cadexport"
+version = "0.0.1"
+dependencies = [
+  #"build123d", # keeping all dependencies left out for now
+  #"ocp_vscode",
+]
+description = "A package to execute a build123d python script and export a resulting shape to an STL"
+
+[tool.setuptools.packages.find]
+include = ["cadexport*"]
+exclude = ["userscript*"]
