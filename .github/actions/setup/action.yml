@@ -41,3 +41,4 @@ runs:
         uv venv --relocatable --python 3.12
         uv pip install build123d ocp_vscode
         uv pip install git+https://github.com/jdegenstein/nice123d@v0.0.3
+        uv pip install git+https://github.com/GarryBGoode/gggears
