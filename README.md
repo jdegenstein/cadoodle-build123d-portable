@@ -10,11 +10,11 @@ How to test on linux/mac:
 ```sh
 chmod +x path_patch.sh
 ./path_patch.sh
-uv/uv run gggears --number-of-teeth=13 export_stl "some_test_filename.stl"
+uv/uv run run build123d_cli gggears spurgear --number-of-teeth 23 export_directory ./
 ```
 
 How to test on windows:
 ```sh
 path_patch.bat
-uv\uv.exe run gggears --number-of-teeth=13 export_stl "some_test_filename.stl"
+uv\uv.exe run build123d_cli gggears spurgear --number-of-teeth 23 export_directory .\
 ```
