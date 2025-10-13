@@ -3,7 +3,7 @@ rem = r"""
 :: batch file that will be ignored by Python
 
 SET PARENT_PATH=%CD%
-SET PYTHON_REL_PATH=pyinst\cpython-3.12.11-windows-x86_64-none
+SET PYTHON_REL_PATH=pyinst\cpython-3.12.12-windows-x86_64-none
 SET FULL_PYTHON_PATH=%PARENT_PATH%\%PYTHON_REL_PATH%\python.exe
 SET PYVENV_REL_PATH=.venv\pyvenv.cfg
 
