@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 PARENT_PATH=`pwd`
-PYTHON_REL_PATH="pyinst/cpython-3.12.11-linux-x86_64-gnu/bin"
+PYTHON_REL_PATH="pyinst/cpython-3.12.12-linux-x86_64-gnu/bin"
 FULL_PYTHON_PATH="$PARENT_PATH/$PYTHON_REL_PATH/python"
 PYVENV_REL_PATH=".venv/pyvenv.cfg"
 
