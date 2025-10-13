@@ -10,7 +10,7 @@ How to test on linux/mac:
 ```sh
 chmod +x path_patch.sh
 ./path_patch.sh
-uv/uv run run build123d_cli gggears spurgear --number-of-teeth 23 export_directory ./
+uv/uv run build123d_cli gggears spurgear --number-of-teeth 23 export_directory ./
 ```
 
 How to test on windows:
