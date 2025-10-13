@@ -42,4 +42,5 @@ runs:
         uv pip install .
         uv pip install build123d ocp_vscode
         uv pip install git+https://github.com/jdegenstein/nice123d@v0.0.3
-        uv pip install git+https://github.com/GarryBGoode/gggears
+        uv pip install git+https://github.com/GarryBGoode/gggears 
+        uv pip install git+https://github.com/gumyr/bd_warehouse
