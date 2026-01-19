@@ -4,12 +4,12 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "build123d_cli"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
   "fire",
-  "build123d>=0.9.1",
+  "build123d>=0.10.0",
   "ocp_vscode",
-  #"gggears",
+  #"py_gearworks",
   #"bd_warehouse",
 ]
 requires-python = ">= 3.10, < 3.14"
@@ -17,7 +17,6 @@ description = "A package to execute a build123d python script and export a resul
 
 [project.scripts]
 build123d_cli = "build123d_cli.build123d_cli:main"
-
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -10,11 +10,18 @@ How to test on linux/mac:
 ```sh
 chmod +x path_patch.sh
 ./path_patch.sh
-uv/uv run build123d_cli gggears spurgear --number-of-teeth 23 export_directory ./
+uv/uv run build123d_cli py_gearworks SpurGear --number-of-teeth 23 export_directory ./
 ```
 
 How to test on windows:
 ```sh
 path_patch.bat
-uv\uv.exe run build123d_cli gggears spurgear --number-of-teeth 23 export_directory .\
+uv\uv.exe run build123d_cli py_gearworks SpurGear --number-of-teeth 23 export_directory .\
+```
+
+JSON schema examples (linux/mac):
+```sh
+uv/uv run build123d_cli --json-schema
+uv/uv run build123d_cli py_gearworks --json-schema
+uv/uv run build123d_cli py_gearworks SpurGear --json-schema
 ```
