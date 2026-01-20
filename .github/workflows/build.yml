@@ -1,9 +1,16 @@
 name: build
 
-# on: [push, pull_request, workflow_dispatch]
-on: [workflow_dispatch]
-jobs:
+on: 
+  workflow_dispatch:
+  push:
+      tags:
+        - 'v*'
 
+permissions:
+  # needed for later attachment to github release
+  contents: write
+
+jobs:
   build:
     strategy:
       fail-fast: false
@@ -12,6 +19,23 @@ jobs:
           "3.13",
           ]
         os: [macos-15-intel, macos-14, ubuntu-latest, windows-latest]
+
+        include:
+          - os: ubuntu-latest
+            platform_slug: linux-x86_64
+            archive_ext: tar.gz
+
+          - os: macos-14
+            platform_slug: macos-arm64
+            archive_ext: zip
+
+          - os: macos-15-intel
+            platform_slug: macos-x86_64
+            archive_ext: zip
+
+          - os: windows-latest
+            platform_slug: windows-x86_64
+            archive_ext: zip
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -55,3 +79,38 @@ jobs:
             python/
             uv/
             path_patch.*
+
+
+      - name: Create Release Archive
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          # 1. Define the Release Filename
+          ASSET_NAME="cadoodle-build123d-portable_${{ github.ref_name }}-${{ matrix.platform_slug }}.${{ matrix.archive_ext }}"
+          echo "RELEASE_ASSET_FILE=$ASSET_NAME" >> $GITHUB_ENV
+          
+          # 2. Define what to include (Folders + Launcher Scripts)
+          # Using a wildcard for the script ensures we catch .cmd or .sh depending on what exists
+          FILES_TO_PACK=".venv uv pyinst python path_patch*"
+
+          # 3. Compress based on extension
+          if [ "${{ matrix.archive_ext }}" == "tar.gz" ]; then
+            # Linux: Create .tar.gz
+            tar -czf "$ASSET_NAME" $FILES_TO_PACK
+          else
+            # Windows/Mac: Create .zip
+            if [ "$RUNNER_OS" == "Windows" ]; then
+              7z a -tzip "$ASSET_NAME" $FILES_TO_PACK
+            else
+              # MacOS Zip with extra vscode install script
+              zip -r -q "$ASSET_NAME" $FILES_TO_PACK
+            fi
+          fi
+
+      - name: Upload Binary to Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.RELEASE_ASSET_FILE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
