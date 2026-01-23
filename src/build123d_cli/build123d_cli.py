@@ -181,7 +181,8 @@ pgw_class_list = [
 bdw_class_list = get_bdw_classes(
     exclude_keywords=["RailProfile", "ToothProfile", "Section", "Plan"]
 )
-bdw_class_list = get_bdw_classes()
+
+# print(sorted([cls.__name__ for cls in bdw_class_list]))
 
 
 def monkeypatch_expdir(class_list):
