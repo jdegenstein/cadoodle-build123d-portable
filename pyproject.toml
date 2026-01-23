@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "build123d_cli"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
   "fire",
   "build123d>=0.10.0",
