@@ -7,13 +7,14 @@ from pathlib import Path
 from datetime import datetime
 from os import PathLike
 
+import pkgutil
+import importlib
 from py_gearworks import *
 from build123d import *
-from bd_warehouse.fastener import HexNut
+import bd_warehouse
+
 
 # --- SCHEMA GENERATION LOGIC ---
-
-
 class SchemaGenerator:
     @staticmethod
     def get_metadata(obj):
@@ -115,6 +116,59 @@ def _export_directory(self, directory: PathLike | str | bytes) -> bool:
     return True
 
 
+def get_bdw_classes(exclude_keywords: list[str] = None) -> list:
+    """
+    Dynamically discovers user-facing classes in the bd_warehouse package.
+
+    Args:
+        exclude_keywords: A list of substrings to filter out class names
+                          (e.g., ["Profile", "Base"]).
+
+    Returns:
+        A list of class objects defined within bd_warehouse.
+    """
+    if exclude_keywords is None:
+        exclude_keywords = []
+
+    found_classes = set()
+
+    # Iterate over all submodules within the bd_warehouse package
+    # prefix=bd_warehouse.__name__ + "." ensures we get full module names (e.g., "bd_warehouse.fastener")
+    for _, name, _ in pkgutil.iter_modules(
+        bd_warehouse.__path__, bd_warehouse.__name__ + "."
+    ):
+        try:
+            module = importlib.import_module(name)
+
+            # Inspect all classes in the module
+            for cls_name, cls in inspect.getmembers(module, inspect.isclass):
+
+                # Filter 1: Must be public (no underscore prefix)
+                if cls_name.startswith("_"):
+                    continue
+
+                # Filter 2: Must be defined in bd_warehouse (not an external import like Path or method)
+                # We check if the class's module origin starts with "bd_warehouse"
+                if not getattr(cls, "__module__", "").startswith("bd_warehouse"):
+                    continue
+
+                # Filter 3: Exclude abstract classes such as Screw, Nut
+                if inspect.isabstract(cls):
+                    continue
+
+                # Filter 3: Exclude specific keywords in the class name
+                if any(keyword in cls_name for keyword in exclude_keywords):
+                    continue
+
+                found_classes.add(cls)
+
+        except ImportError as e:
+            print(f"Warning: Could not import module {name}: {e}")
+            continue
+
+    return list(found_classes)
+
+
 pgw_class_list = [
     BevelGear,
     CycloidGear,
@@ -124,7 +178,10 @@ pgw_class_list = [
     SpurGear,
     SpurRingGear,
 ]
-bdw_class_list = [HexNut]
+bdw_class_list = get_bdw_classes(
+    exclude_keywords=["RailProfile", "ToothProfile", "Section", "Plan"]
+)
+bdw_class_list = get_bdw_classes()
 
 
 def monkeypatch_expdir(class_list):
