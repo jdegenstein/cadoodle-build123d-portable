@@ -1,6 +1,6 @@
 name: 'Setup'
 inputs:
-  python-version:  # id of input
+  python-version:
     description: 'Python version'
     required: true
 
@@ -15,24 +15,17 @@ runs:
       run: |
         mkdir uv
         curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="${GITHUB_WORKSPACE}/uv" sh
-        echo $PATH
         export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
-        echo $PATH
         chmod +x ${GITHUB_WORKSPACE}/uv/uv
         uv --version
-    - name: Install Requirements
+        
+    - name: Fetch Standalone Python
       shell: bash
       run: |
         mkdir python
         mkdir pyinst
         export UV_PYTHON_BIN_DIR="`pwd`/python"
         export UV_PYTHON_INSTALL_DIR="`pwd`/pyinst"
-        echo $PATH
         export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
-        echo $PATH
+        # Fetch the exact version
         uv python install 3.12.12
-        uv venv --relocatable --python 3.12.12
-        uv pip install .
-        uv pip install build123d ocp_vscode
-        uv pip install git+https://github.com/GarryBGoode/py_gearworks 
-        uv pip install git+https://github.com/gumyr/bd_warehouse
