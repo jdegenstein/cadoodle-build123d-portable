@@ -79,7 +79,14 @@ def patched_fire(component=None, *args, **kwargs):
         # If we landed on a dict, show all schemas in that group.
         # If a class, show that specific schema.
         if isinstance(current, dict):
-            output = {k: SchemaGenerator.get_metadata(v) for k, v in current.items()}
+            def extract_metadata(target):
+                if isinstance(target, dict):
+                    # If it's a nested command group, dive a layer deeper
+                    return {k: extract_metadata(v) for k, v in target.items()}
+                # If it's a callable function/class, get its signature
+                return SchemaGenerator.get_metadata(target)
+
+            output = extract_metadata(current)
         else:
             output = SchemaGenerator.get_metadata(current)
 
