@@ -7,7 +7,6 @@ on:
         - 'v*'
 
 permissions:
-  # needed for later attachment to github release
   contents: write
 
 jobs:
@@ -15,101 +14,102 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [
-          "3.13",
-          ]
+        python-version: ["3.12.12"]
         os: [macos-15-intel, macos-14, ubuntu-latest, windows-latest]
 
         include:
           - os: ubuntu-latest
             platform_slug: linux-x86_64
             archive_ext: tar.gz
+            DEL_PYTHON_LINK_DIR: ./pyinst/cpython-3.12-linux-x86_64-gnu
+            PYTHON_REAL_DIR: ./pyinst/cpython-3.12.12-linux-x86_64-gnu
 
           - os: macos-14
             platform_slug: macos-arm64
             archive_ext: zip
+            DEL_PYTHON_LINK_DIR: ./pyinst/cpython-3.12-macos-aarch64-none
+            PYTHON_REAL_DIR: ./pyinst/cpython-3.12.12-macos-aarch64-none
 
           - os: macos-15-intel
             platform_slug: macos-x86_64
             archive_ext: zip
+            DEL_PYTHON_LINK_DIR: ./pyinst/cpython-3.12-macos-x86_64-none
+            PYTHON_REAL_DIR: ./pyinst/cpython-3.12.12-macos-x86_64-none
 
           - os: windows-latest
             platform_slug: windows-x86_64
-            archive_ext: zip
+            archive_ext: exe # Switched to exe for 7z SFX
+            DEL_PYTHON_LINK_DIR: ./pyinst/cpython-3.12-windows-x86_64-none
+            PYTHON_REAL_DIR: ./pyinst/cpython-3.12.12-windows-x86_64-none
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup/
         with:
           python-version: ${{ matrix.python-version }}
-      - name: shell
+          
+      - name: shorten python path (all platforms)
         shell: bash
-        #TODO: cleanup and harmonization
         run: |
-          pwd
-          ls -alR
-          ls -alR ../
-          echo $PATH
-          export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
-          echo $PATH
-          uv python find
-          uv python list
-    
-      - name: linux/mac path patch script
+          unlink ${{ matrix.DEL_PYTHON_LINK_DIR }}
+          mv ${{ matrix.PYTHON_REAL_DIR }} ./py
+          rm -rf ./pyinst
+          
+      - name: linux/mac install dependencies
         if: runner.os != 'Windows'
         shell: bash
         run: |
-          cp scripts/path_patch.sh ./
+          export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
+          rm -f ./py/lib/python3.12/EXTERNALLY-MANAGED
+          # Install from local pyproject.toml first, then specific repos
+          uv pip install . --python ./py
+          uv pip install build123d ocp_vscode git+https://github.com/GarryBGoode/py_gearworks git+https://github.com/gumyr/bd_warehouse --python ./py
       
-      - name: windows path patch script
+      - name: windows install dependencies
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          cp scripts/path_patch.bat ./
-          
-      - uses: actions/upload-artifact@v4
+          export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
+          rm -f ./py/Lib/EXTERNALLY-MANAGED
+          uv pip install . --python ./py
+          uv pip install build123d ocp_vscode git+https://github.com/GarryBGoode/py_gearworks git+https://github.com/gumyr/bd_warehouse --python ./py
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: cadoodle-build123d-portable-${{ matrix.os }}
-          # TODO: make cross-platform compat
-          include-hidden-files: true # This line is crucial for including hidden files
           path: |
-            .venv/
-            pyinst/
-            python/
+            py/
             uv/
-            path_patch.*
-
 
       - name: Create Release Archive
         if: startsWith(github.ref, 'refs/tags/v')
         shell: bash
         run: |
-          # 1. Define the Release Filename
-          ASSET_NAME="cadoodle-build123d-portable_${{ github.ref_name }}-${{ matrix.platform_slug }}.${{ matrix.archive_ext }}"
+          ASSET_NAME="cadoodle-b123d_${{ github.ref_name }}-${{ matrix.platform_slug }}.${{ matrix.archive_ext }}"
           echo "RELEASE_ASSET_FILE=$ASSET_NAME" >> $GITHUB_ENV
           
-          # 2. Define what to include (Folders + Launcher Scripts)
-          # Using a wildcard for the script ensures we catch .cmd or .sh depending on what exists
-          FILES_TO_PACK=".venv uv pyinst python path_patch*"
+          # Wrap files in a root directory to prevent messy extractions 
+          WRAPPER_DIR="cadoodle-b123d_${{ github.ref_name }}"
+          mkdir -p "$WRAPPER_DIR"
+          mv uv py "$WRAPPER_DIR"/
 
-          # 3. Compress based on extension
           if [ "${{ matrix.archive_ext }}" == "tar.gz" ]; then
-            # Linux: Create .tar.gz
-            tar -czf "$ASSET_NAME" $FILES_TO_PACK
+            tar -czf "$ASSET_NAME" "$WRAPPER_DIR"
           else
-            # Windows/Mac: Create .zip
             if [ "$RUNNER_OS" == "Windows" ]; then
-              7z a -tzip "$ASSET_NAME" $FILES_TO_PACK
+              # Create 7-Zip SFX executable
+              7z a -sfx7z.sfx -mx=9 -mmt=on "$ASSET_NAME" "$WRAPPER_DIR"
             else
-              # MacOS Zip with extra vscode install script
-              zip -r -q "$ASSET_NAME" $FILES_TO_PACK
+              zip -r -q "$ASSET_NAME" "$WRAPPER_DIR"
             fi
           fi
 
       - name: Upload Binary to Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b #v3.0.1
         with:
           files: ${{ env.RELEASE_ASSET_FILE }}
         env:
