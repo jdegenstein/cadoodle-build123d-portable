@@ -40,7 +40,7 @@ jobs:
 
           - os: windows-latest
             platform_slug: windows-x86_64
-            archive_ext: exe # Switched to exe for 7z SFX
+            archive_ext: exe 
             DEL_PYTHON_LINK_DIR: ./pyinst/cpython-3.12-windows-x86_64-none
             PYTHON_REAL_DIR: ./pyinst/cpython-3.12.12-windows-x86_64-none
 
@@ -66,7 +66,6 @@ jobs:
         run: |
           export PATH="${GITHUB_WORKSPACE}/uv:$PATH"
           rm -f ./py/lib/python3.12/EXTERNALLY-MANAGED
-          # Install from local pyproject.toml first, then specific repos
           uv pip install . --python ./py
           uv pip install build123d ocp_vscode git+https://github.com/GarryBGoode/py_gearworks git+https://github.com/gumyr/bd_warehouse --python ./py
       
@@ -82,12 +81,10 @@ jobs:
       - name: Create Archive
         shell: bash
         run: |
-          # Sanitize branch/tag name for folders
           SAFE_REF="${GITHUB_REF_NAME////-}"
           ASSET_NAME="cadoodle-b123d_${SAFE_REF}-${{ matrix.platform_slug }}.${{ matrix.archive_ext }}"
           echo "RELEASE_ASSET_FILE=$ASSET_NAME" >> $GITHUB_ENV
           
-          # Wrap files in a root directory to prevent messy extractions 
           WRAPPER_DIR="cadoodle-b123d_${SAFE_REF}"
           echo "WRAPPER_DIR=$WRAPPER_DIR" >> $GITHUB_ENV
           mkdir -p "$WRAPPER_DIR"
@@ -99,6 +96,11 @@ jobs:
           else
             if [ "$RUNNER_OS" == "Windows" ]; then
               7z a -sfx7z.sfx -mx=9 -mmt=on "$ASSET_NAME" "$WRAPPER_DIR"
+              
+              # Duplicate the compiled executable for the .sfx release artifact
+              SFX_ASSET_NAME="cadoodle-b123d_${SAFE_REF}-${{ matrix.platform_slug }}.sfx"
+              cp "$ASSET_NAME" "$SFX_ASSET_NAME"
+              echo "RELEASE_ASSET_SFX=$SFX_ASSET_NAME" >> $GITHUB_ENV
             else
               zip -r -q "$ASSET_NAME" "$WRAPPER_DIR"
             fi
@@ -107,21 +109,18 @@ jobs:
       - name: Extract and Test Artifact
         shell: bash
         run: |
-          # Simulate end-user downloading and extracting the artifact
           mkdir test_env
           
           if [ "${{ matrix.archive_ext }}" == "tar.gz" ]; then
             tar -xzf "${{ env.RELEASE_ASSET_FILE }}" -C test_env
           else
             if [ "$RUNNER_OS" == "Windows" ]; then
-              # Use 7z to extract the SFX executable quietly
               7z x "${{ env.RELEASE_ASSET_FILE }}" -o"test_env" -y
             else
               unzip -q "${{ env.RELEASE_ASSET_FILE }}" -d test_env
             fi
           fi
           
-          # Point to the freshly extracted python executable
           if [ "$RUNNER_OS" == "Windows" ]; then
             export PORTABLE_PYTHON_EXE="$(pwd)/test_env/${{ env.WRAPPER_DIR }}/py/python.exe"
           else
@@ -129,21 +128,22 @@ jobs:
           fi
           
           export PATH="${GITHUB_WORKSPACE}/test_env/${{ env.WRAPPER_DIR }}/uv:$PATH"
-          
-          # Run pytest ephemerally using uvx
           uvx pytest tests/
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: cadoodle-build123d-portable-${{ matrix.os }}
           include-hidden-files: true
-          # Now uploading the unarchived wrapper directory directly
           path: ${{ env.WRAPPER_DIR }}/
 
       - name: Upload Binary to Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b #v3.0.1
         with:
-          files: ${{ env.RELEASE_ASSET_FILE }}
+          # The multi-line string supports empty variables dynamically. 
+          # On Mac/Linux, RELEASE_ASSET_SFX evaluates to nothing and is safely ignored.
+          files: |
+            ${{ env.RELEASE_ASSET_FILE }}
+            ${{ env.RELEASE_ASSET_SFX }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
