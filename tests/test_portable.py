@@ -62,8 +62,8 @@ def test_e2e_cli_export(tmp_path):
             "py_gearworks",
             "SpurGear",
             "--module=1",
-            "--teeth=10",
-            "--thickness=5",
+            "--number_of_teeth=10",
+            "--height=5",
             "-",  # fire separator for "global command"
             "export_directory",
             str(out_dir),
@@ -88,7 +88,7 @@ def test_e2e_script_export(tmp_path):
 import build123d_cli
 from py_gearworks import SpurGear
 
-gear = SpurGear(module=1, teeth=10, thickness=5)
+gear = SpurGear(module=1, number_of_teeth=10, height=5)
 gear.export_directory('{out_dir.as_posix()}')
 """
     script_path.write_text(code)
