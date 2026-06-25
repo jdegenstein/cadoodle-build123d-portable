@@ -79,6 +79,7 @@ def patched_fire(component=None, *args, **kwargs):
         # If we landed on a dict, show all schemas in that group.
         # If a class, show that specific schema.
         if isinstance(current, dict):
+
             def extract_metadata(target):
                 if isinstance(target, dict):
                     # If it's a nested command group, dive a layer deeper
@@ -104,15 +105,21 @@ timestamp_string = current_datetime.strftime("%Y-%m-%d_%H_%M_%S")
 
 
 def _export_directory(self, directory: PathLike | str | bytes) -> bool:
+    # 1. Cast incoming string to Path object to prevent TypeError
+    directory = Path(directory)
     base_filename_no_extension = Path("build123d_" + timestamp_string)
+
+    # 2. Extract the underlying CAD shape
     if hasattr(self, "build_part"):
         to_export = self.build_part()
     elif hasattr(self, "part"):
         to_export = self.part
+    elif hasattr(self, "solid"):  # Fallback for some wrappers
+        to_export = self.solid
     elif hasattr(self, "wrapped"):
         to_export = self
     else:
-        print("unknown part attribute")
+        print(f"unknown part attribute on {type(self)}")
         return False
 
     export_stl(to_export, directory / base_filename_no_extension.with_suffix(".stl"))

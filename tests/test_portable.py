@@ -17,13 +17,18 @@ def check_env():
 
 def run_portable(cmd_args, **kwargs):
     """Helper to run commands within the isolated portable environment."""
-    return subprocess.run(
-        [PORTABLE_PYTHON] + cmd_args,
-        capture_output=True,
-        text=True,
-        check=True,
-        **kwargs,
+    result = subprocess.run(
+        [PORTABLE_PYTHON] + cmd_args, capture_output=True, text=True, **kwargs
     )
+
+    # Force pytest to display the actual tracebacks on failure
+    if result.returncode != 0:
+        print(f"\n--- COMMAND FAILED (Exit Code {result.returncode}) ---")
+        print(f"STDOUT:\n{result.stdout}")
+        print(f"STDERR:\n{result.stderr}")
+        result.check_returncode()
+
+    return result
 
 
 def test_cli_json_schema_root():
@@ -59,6 +64,7 @@ def test_e2e_cli_export(tmp_path):
             "--module=1",
             "--teeth=10",
             "--thickness=5",
+            "-",  # fire separator for "global command"
             "export_directory",
             str(out_dir),
         ]
