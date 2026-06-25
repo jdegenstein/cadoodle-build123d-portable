@@ -2,26 +2,21 @@
 
 The purpose of this repository is to generate (with github workflows) fully portable archives that contain build123d (and possibly other supporting packages like ocp_vscode). These fully portable archives contain (1) fully working python, (2) uv, (3) build123d and dependencies, (4) other related packages.
 
-Because of limitations in the way that python virtual environments can be moved, I have also included a script `path_patch.[sh/bat]` that will patch the necessary path in `.venv/pyvenv.cfg` with the correct path. In order for these archives to work this script must be ran after the archive is unzipped AND anytime the folder is moved.
-
-This repository may also eventually contain some python tooling to assist in integrating build123d with cadoodle.
+This repository also contains some python tooling to assist in integrating build123d with cadoodle with the bundled package `build123d_cli`. The artifacts are tar.gz on Linux to preserve permissions, .zip on macos, and self extracting executable (.exe) on Windows. Windows uses a self extracting executable to ensure that long path limitations of the built-in unzipping tool do not prevent extracting all the files (user reported issue).
 
 How to test on linux/mac:
 ```sh
-chmod +x path_patch.sh
-./path_patch.sh
-uv/uv run build123d_cli py_gearworks SpurGear --number-of-teeth 23 export_directory ./
+py/bin/python -m build123d_cli py_gearworks SpurGear --number-of-teeth 23 export_directory ./
 ```
 
 How to test on windows:
 ```sh
-path_patch.bat
-uv\uv.exe run build123d_cli py_gearworks SpurGear --number-of-teeth 23 export_directory .\
+py\python -m build123d_cli py_gearworks SpurGear --number-of-teeth 23 export_directory .\
 ```
 
 JSON schema examples (linux/mac):
 ```sh
-uv/uv run build123d_cli --json-schema
-uv/uv run build123d_cli py_gearworks --json-schema
-uv/uv run build123d_cli py_gearworks SpurGear --json-schema
+py/bin/python -m build123d_cli --json-schema
+py/bin/python -m build123d_cli py_gearworks --json-schema
+py/bin/python -m run build123d_cli py_gearworks SpurGear --json-schema
 ```
