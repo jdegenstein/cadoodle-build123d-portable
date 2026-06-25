@@ -85,11 +85,12 @@ def test_e2e_script_export(tmp_path):
 
     # We import build123d_cli just to activate the export_directory monkeypatch
     code = f"""
-import build123d_cli
 from py_gearworks import SpurGear
+from build123d import export_stl
 
 gear = SpurGear(module=1, number_of_teeth=10, height=5)
-gear.export_directory('{out_dir.as_posix()}')
+# py_gearworks classes expose their underlying B-Rep geometry via the .solid attribute
+export_stl(gear.build_part(), '{out_file.as_posix()}')
 """
     script_path.write_text(code)
     run_portable([str(script_path)])
